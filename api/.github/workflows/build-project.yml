@@ -1,0 +1,57 @@
+name: CI/CD
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: "15.x"
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./api
+
+      - name: Docker compose
+        run: docker-compose up -d --build
+        working-directory: ./
+
+      - name: Sleep for 20s
+        uses: juliangruber/sleep-action@v1
+        with:
+          time: 20s
+
+      - name: Migrate AMK
+        run: docker exec node-app sh -c "NODE_ENV=production npm run knexrollmig"
+        working-directory: ./
+
+      - name: Test
+        run: docker exec node-app sh -c "PORT=4000 NODE_ENV=production npm test"
+        working-directory: ./
+
+      - name: Login azure
+        uses: azure/docker-login@v1
+        with:
+          login-server: idi2019.azurecr.io
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.PASSWORD }}
+
+      - name: Permission build.sh
+        run: chmod +x ./build.sh
+        working-directory: ./
+
+      - name: Build docker image node app
+        run: ./build.sh node-app idi2019.azurecr.io
+        working-directory: ./
+
+      - name: Build docker image mysql
+        run: ./build.sh dbmysql idi2019.azurecr.io
+        working-directory: ./
