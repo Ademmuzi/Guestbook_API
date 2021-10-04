@@ -13,12 +13,12 @@ else
 fi
 
 # 1. Container bauen
-docker build -t adem:$TAG .
+docker build -t amu3100:$TAG .
 
 # 2. Container taggen
-docker tag adem:$TAG $REGISTRY/ssc-adem:latest
-docker tag adem:$TAG $REGISTRY/ssc-adem:$TAG
+docker tag amu3100:$TAG $REGISTRY/amu3100:latest
+docker tag amu3100:$TAG $REGISTRY/amu3100:$TAG
 
 # 3. Container pushen
-docker push $REGISTRY/ssc-adem:latest
-docker push $REGISTRY/ssc-adem:$TAG
+docker push $REGISTRY/amu3100:latest
+docker push $REGISTRY/amu3100:$TAG
